@@ -21,16 +21,6 @@ public enum PListType {
 			return "date";
 		}
 	},
-	TrueType {
-		public String toString() {
-			return "true";
-		}
-	},
-	FalseType {
-		public String toString() {
-			return "false";
-		}
-	},
 	DataType {
 		public String toString() {
 			return "data";
@@ -46,5 +36,6 @@ public enum PListType {
 			return "dict";
 		}
 	},
+	BooleanType,
 	AutoDetect
 }

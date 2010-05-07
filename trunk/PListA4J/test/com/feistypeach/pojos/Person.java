@@ -1,5 +1,7 @@
 package com.feistypeach.pojos;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.feistypeach.plista4j.PListObject;
@@ -16,7 +18,10 @@ public class Person {
 	private String lastname;
 	
 	@PListValue
-	private int age;
+	private Date dob;
+	
+	@PListValue(key="has.iphone")
+	private boolean hasIPhone = false;
 	
 	@PListValue
 	private float weight;
@@ -31,7 +36,10 @@ public class Person {
 	private Location location;
 	
 	@PListValue(type=PListType.ArrayType)
-	private List<Person> friends;
+	private List<Person> friends = new ArrayList<Person>();
+	
+	@PListValue
+	private List<String> tags = new ArrayList<String>();
 
 	public String getFirstName() {
 		return firstName;
@@ -41,20 +49,12 @@ public class Person {
 		this.firstName = firstName;
 	}
 
-	public String getLastname() {
+	public String getLastName() {
 		return lastname;
 	}
 
-	public void setLastname(String lastname) {
+	public void setLastName(String lastname) {
 		this.lastname = lastname;
-	}
-
-	public int getAge() {
-		return age;
-	}
-
-	public void setAge(int age) {
-		this.age = age;
 	}
 
 	public float getWeight() {
@@ -96,6 +96,31 @@ public class Person {
 	public void setFriends(List<Person> friends) {
 		this.friends = friends;
 	}
+
+	public Date getDob() {
+		return dob;
+	}
+
+	public void setDob(Date dob) {
+		this.dob = dob;
+	}
+
+	public boolean hasIPhone() {
+		return hasIPhone;
+	}
+
+	public void setHasIPhone(boolean hasIPhone) {
+		this.hasIPhone = hasIPhone;
+	}
+
+	public List<String> getTags() {
+		return tags;
+	}
+
+	public void setTags(List<String> tags) {
+		this.tags = tags;
+	}
+	
 	
 	
 	

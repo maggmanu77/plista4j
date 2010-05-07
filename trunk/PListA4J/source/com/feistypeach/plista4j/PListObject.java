@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 @Target(value=ElementType.TYPE)
 @Retention(value=RetentionPolicy.RUNTIME)
 public @interface PListObject {
-	PListType value() default PListType.AutoDetect;
+	PListType value() default PListType.DictType;
 }
