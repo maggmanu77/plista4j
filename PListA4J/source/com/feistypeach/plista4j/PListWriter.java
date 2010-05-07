@@ -75,7 +75,7 @@ public class PListWriter {
 		for (Method m : source.getClass().getDeclaredMethods()) {
 			m.setAccessible(true);
 			if (ClassHelper.isGetter(m) && m.isAnnotationPresent(PListValue.class)) {
-				Object value = m.invoke(source, null);
+				Object value = m.invoke(source, (Object[]) null);
 				if (value != null) {
 					// Key
 					indent(out);
