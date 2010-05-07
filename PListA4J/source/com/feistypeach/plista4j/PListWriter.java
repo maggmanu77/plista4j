@@ -6,6 +6,9 @@ import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Map;
 
 import com.feistypeach.util.Base64Util;
 import com.feistypeach.util.ClassHelper;
@@ -52,46 +55,62 @@ public class PListWriter {
 		indent(out);
 		out.println("<dict>");
 		tabs++;
-		for (Field f : source.getClass().getDeclaredFields()) {
-			f.setAccessible(true);
-			Object value = f.get(source);
-			if (value != null && f.isAnnotationPresent(PListValue.class)) {
-				
+		
+		if (source instanceof Map) {
+			Map map = (Map) source;
+			for (Object key : map.keySet()) {
+				Object value = map.get(key);
 				// Key
 				indent(out);
-				PListValue plv = f.getAnnotation(PListValue.class);
 				out.print("<key>");
-				String key = plv.key().trim();
-				out.print((key.length() == 0)? f.getName() : key);
+				out.print(key);
 				out.println("</key>");
 				
 				// Value
-				PListType type = (plv.type() == PListType.AutoDetect)? autoDetect(value) : plv.type();
+				PListType type = autoDetect(value);
 				writeValue(value, type, out);
-				
 			}
-		}
-		
-		for (Method m : source.getClass().getDeclaredMethods()) {
-			m.setAccessible(true);
-			if (ClassHelper.isGetter(m) && m.isAnnotationPresent(PListValue.class)) {
-				Object value = m.invoke(source, (Object[]) null);
-				if (value != null) {
+		} else {
+			for (Field f : source.getClass().getDeclaredFields()) {
+				f.setAccessible(true);
+				Object value = f.get(source);
+				if (value != null && f.isAnnotationPresent(PListValue.class)) {
+					
 					// Key
 					indent(out);
-					PListValue plv = m.getAnnotation(PListValue.class);
+					PListValue plv = f.getAnnotation(PListValue.class);
 					out.print("<key>");
 					String key = plv.key().trim();
-					out.print((key.length() == 0)? ClassHelper.getName(m) : key);
+					out.print((key.length() == 0)? f.getName() : key);
 					out.println("</key>");
 					
 					// Value
 					PListType type = (plv.type() == PListType.AutoDetect)? autoDetect(value) : plv.type();
 					writeValue(value, type, out);
+					
+				}
+			}
+			
+			for (Method m : source.getClass().getDeclaredMethods()) {
+				m.setAccessible(true);
+				if (ClassHelper.isGetter(m) && m.isAnnotationPresent(PListValue.class)) {
+					Object value = m.invoke(source, (Object[]) null);
+					if (value != null) {
+						// Key
+						indent(out);
+						PListValue plv = m.getAnnotation(PListValue.class);
+						out.print("<key>");
+						String key = plv.key().trim();
+						out.print((key.length() == 0)? ClassHelper.getName(m) : key);
+						out.println("</key>");
+						
+						// Value
+						PListType type = (plv.type() == PListType.AutoDetect)? autoDetect(value) : plv.type();
+						writeValue(value, type, out);
+					}
 				}
 			}
 		}
-		
 		tabs--;
 		indent(out);
 		out.println("</dict>");
@@ -120,8 +139,8 @@ public class PListWriter {
 			break;
 		case DateType :
 			indent(out);
-			out.print("<date>");
-			out.print(new SimpleDateFormat().format((Date)value));
+			out.print("<date>"); //ex 2010-05-07T22:11:09Z
+			out.print(new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'").format((Date)value));
 			out.println("</date>");
 			break;
 		case DataType :
@@ -160,6 +179,8 @@ public class PListWriter {
 		} else if (value.getClass().isArray()) {
 			Class dataType = value.getClass().getComponentType();
 			return dataType.getSimpleName().equals("byte")? PListType.DataType : PListType.ArrayType;
+		} else if (value instanceof Map) {
+			return PListType.DictType;
 		} else if (value instanceof Collection) {
 			return PListType.ArrayType;
 		}
