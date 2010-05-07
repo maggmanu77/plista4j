@@ -13,7 +13,7 @@ public class Address {
 	private String city;
 	@PListValue
 	private String state;
-	@PListValue
+	
 	private String zipcode;
 	
 	public String getStreet1() {
@@ -40,9 +40,13 @@ public class Address {
 	public void setState(String state) {
 		this.state = state;
 	}
+	
+	@PListValue
 	public String getZipcode() {
 		return zipcode;
 	}
+	
+	@PListValue
 	public void setZipcode(String zipcode) {
 		this.zipcode = zipcode;
 	}
