@@ -1,5 +1,8 @@
 package com.feistypeach.pojos;
 
+import java.util.Hashtable;
+import java.util.Map;
+
 import com.feistypeach.plista4j.PListObject;
 import com.feistypeach.plista4j.PListValue;
 
@@ -13,6 +16,8 @@ public class Address {
 	private String city;
 	@PListValue
 	private String state;
+	
+	private Hashtable<String, String> custom = new Hashtable<String, String>();
 	
 	private String zipcode;
 	
@@ -51,5 +56,9 @@ public class Address {
 		this.zipcode = zipcode;
 	}
 	
+	@PListValue(key="customfields")
+	public Map getCustomFields() {
+		return custom;
+	}
 	
 }
