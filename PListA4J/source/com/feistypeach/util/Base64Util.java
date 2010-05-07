@@ -6,7 +6,7 @@ package com.feistypeach.util;
  *
  * @author  Rodney Aiglstorfer
  */
-class Base64Util {
+public class Base64Util {
     /**
      * Translates the specified byte array into a Base64 string as per
      * Preferences.put(byte[]).
@@ -25,7 +25,7 @@ class Base64Util {
         return byteArrayToBase64(a, true);
     }
 
-    private static String byteArrayToBase64(byte[] a, boolean alternate) {
+    public static String byteArrayToBase64(byte[] a, boolean alternate) {
         int aLen = a.length;
         int numFullGroups = aLen/3;
         int numBytesInPartialGroup = aLen - 3*numFullGroups;
