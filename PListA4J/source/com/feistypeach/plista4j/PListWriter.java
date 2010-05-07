@@ -2,12 +2,15 @@ package com.feistypeach.plista4j;
 
 import java.io.PrintStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 
 import com.feistypeach.util.Base64Util;
+import com.feistypeach.util.ClassHelper;
 
+@SuppressWarnings("unchecked")
 public class PListWriter {
 	
 	private static final String HEADER = 
@@ -18,8 +21,7 @@ public class PListWriter {
 	private static final String FOOTER = "</plist>";
 	
 	private int tabs = 0;
-	
-	@SuppressWarnings("unchecked")
+		
 	public void write(Object obj, PrintStream out) throws Exception {
 		if (obj.getClass().isAnnotationPresent(PListObject.class)) {
 			out.println(HEADER);
@@ -69,6 +71,27 @@ public class PListWriter {
 				
 			}
 		}
+		
+		for (Method m : source.getClass().getDeclaredMethods()) {
+			m.setAccessible(true);
+			if (ClassHelper.isGetter(m) && m.isAnnotationPresent(PListValue.class)) {
+				Object value = m.invoke(source, null);
+				if (value != null) {
+					// Key
+					indent(out);
+					PListValue plv = m.getAnnotation(PListValue.class);
+					out.print("<key>");
+					String key = plv.key().trim();
+					out.print((key.length() == 0)? ClassHelper.getName(m) : key);
+					out.println("</key>");
+					
+					// Value
+					PListType type = (plv.type() == PListType.AutoDetect)? autoDetect(value) : plv.type();
+					writeValue(value, type, out);
+				}
+			}
+		}
+		
 		tabs--;
 		indent(out);
 		out.println("</dict>");
