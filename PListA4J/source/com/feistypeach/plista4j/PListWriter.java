@@ -6,8 +6,6 @@ import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Map;
 
 import com.feistypeach.util.Base64Util;
@@ -139,7 +137,7 @@ public class PListWriter {
 			break;
 		case DateType :
 			indent(out);
-			out.print("<date>"); //ex 2010-05-07T22:11:09Z
+			out.print("<date>"); 
 			out.print(new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'").format((Date)value));
 			out.println("</date>");
 			break;
