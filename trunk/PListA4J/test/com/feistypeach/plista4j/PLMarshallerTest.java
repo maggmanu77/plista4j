@@ -2,9 +2,12 @@ package com.feistypeach.plista4j;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
+
+import javax.print.attribute.standard.PrinterInfo;
 
 import junit.framework.TestCase;
 
@@ -42,6 +45,9 @@ public class PLMarshallerTest extends TestCase {
 		
 		PListWriter writer = new PListWriter();
 		writer.write(rodney, new PrintStream(new File("sample.plist")));
+		
+		PListReader reader = new PListReader();
+		reader.read(Person.class, new FileInputStream("sample.plist"));
 	}
 	
 	public byte[] loadResource(String resource) throws Exception {
