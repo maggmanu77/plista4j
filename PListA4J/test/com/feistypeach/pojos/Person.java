@@ -36,10 +36,10 @@ public class Person {
 	private Location location;
 	
 	@PListValue(type=PListType.ArrayType)
-	private List<Person> friends = new ArrayList<Person>();
+	private ArrayList<Person> friends = new ArrayList<Person>();
 	
 	@PListValue
-	private List<String> tags = new ArrayList<String>();
+	private ArrayList<String> tags = new ArrayList<String>();
 
 	public String getFirstName() {
 		return firstName;
@@ -89,11 +89,11 @@ public class Person {
 		this.location = location;
 	}
 
-	public List<Person> getFriends() {
+	public ArrayList<Person> getFriends() {
 		return friends;
 	}
 
-	public void setFriends(List<Person> friends) {
+	public void setFriends(ArrayList<Person> friends) {
 		this.friends = friends;
 	}
 
@@ -117,7 +117,7 @@ public class Person {
 		return tags;
 	}
 
-	public void setTags(List<String> tags) {
+	public void setTags(ArrayList<String> tags) {
 		this.tags = tags;
 	}
 	
