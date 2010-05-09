@@ -1,6 +1,10 @@
 package com.feistypeach.util;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ClassHelper {
 
@@ -36,5 +40,34 @@ public class ClassHelper {
 			return name.substring(0, 1).toLowerCase() + name.substring(1);
 		}
 		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static Object convert(Object val, Class type) {
+		if (val.getClass().isAssignableFrom(type) == false) {
+			if (type.equals(Date.class)) {
+				try {
+					val = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'").parse(val.toString());
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+			} else {
+				Method valueOf;
+				try {
+					valueOf = type.getMethod("valueOf", String.class);
+					val = valueOf.invoke(type, val.toString());
+				} catch (Exception e) {
+					try {
+						Constructor constructor = type.getConstructor(String.class);
+						val = constructor.newInstance(val);
+					} catch (Exception e2) {
+						
+					}
+				} 
+				
+					
+			}
+		}
+		return val;
 	}
 }

@@ -16,8 +16,8 @@ public class Location {
 	
 	public static Location valueOf(String sloc) {
 		String[] latlong = sloc.split(",");
-		float latitude = Float.valueOf(latlong[0].trim());
-		float longitude = Float.valueOf(latlong[1].trim());
+		Double latitude = Double.valueOf(latlong[0].trim());
+		Double longitude = Double.valueOf(latlong[1].trim());
 		return new Location(latitude, longitude);
 	}
 	

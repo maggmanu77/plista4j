@@ -24,7 +24,7 @@ public class Person {
 	private boolean hasIPhone = false;
 	
 	@PListValue
-	private float weight;
+	private Float weight;
 	
 	@PListValue
 	private byte[] avatar;
@@ -57,11 +57,11 @@ public class Person {
 		this.lastname = lastname;
 	}
 
-	public float getWeight() {
+	public Float getWeight() {
 		return weight;
 	}
 
-	public void setWeight(float weight) {
+	public void setWeight(Float weight) {
 		this.weight = weight;
 	}
 
