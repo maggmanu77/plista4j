@@ -3,8 +3,10 @@ package com.feistypeach.plista4j;
 import java.io.InputStream;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.xml.parsers.SAXParser;
@@ -14,6 +16,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import com.feistypeach.util.Base64Util;
 import com.feistypeach.util.ClassHelper;
 
 public class PListReader {
@@ -46,15 +49,14 @@ public class PListReader {
 		@Override
 		public void characters(char[] data, int start, int length) throws SAXException {
 			String str = String.valueOf(data, start, length);
-			//System.out.println(str);
 			if (!shouldIgnore()) {
 				push(str);
 			}
+			debug("'%s' \n\t%s", str, this);
 		}
 
 		@Override
 		public void startElement(String uri, String lName, String qName, Attributes attributes) throws SAXException {
-			//System.out.println("<" + qName + ">");
 			try {
 				if (!shouldIgnore() && (qName.equals("dict") || qName.equals("array"))) {
 					if (queue.size() > 1) {
@@ -62,10 +64,14 @@ public class PListReader {
 						if (fieldOrMethod != null) {
 							if (fieldOrMethod instanceof Field) {
 								Field f = (Field) fieldOrMethod;
-								push(f.getType().newInstance());
+								Class type = f.getType();
+								// TODO check if type is interface and create concrete equivalent
+								push(type.newInstance());
 							} else if (fieldOrMethod instanceof Method) {
 								Method m = (Method) fieldOrMethod;
-								push(m.getParameterTypes()[0].newInstance());
+								Class type = m.getParameterTypes()[0];
+								// TODO check if type is interface and create concrete equivalent
+								push(type.newInstance());
 							}
 						}
 					}	
@@ -73,37 +79,56 @@ public class PListReader {
 			} catch (Exception e) {
 				e.printStackTrace();
 			} 
-			
+			debug("<%s> \n\t%s", qName, this);
 		}
 
 		@Override
 		public void endElement(String uri, String lName, String qName) throws SAXException {
-			//System.out.println("</" + qName + ">");
-			if (qName.equals("key") && !shouldIgnore()) {
-				Object key = pop();
-				Object accessor = accessorForKey(peek(), key);
-				if (accessor == null) {
-					ignore();
-				} else {
-					dontIgnore();
-					push(accessor);
+			if (queue.size() > 1) {
+				if (qName.equals("key") && !shouldIgnore()) {
+					Object key = pop();
+					Object accessor = accessorForKey(peek(), key);
+					if (accessor == null) {
+						ignore();
+					} else {
+						dontIgnore();
+						push(accessor);
+					}
 				}
-			}
+					
+				if (qName.equals("true") && !shouldIgnore())
+					push(Boolean.TRUE);
 				
-			if (qName.equals("true") && !shouldIgnore())
-				push(Boolean.TRUE);
-			
-			if (qName.equals("false") && !shouldIgnore())
-				push(Boolean.FALSE);
-			
-			if (!qName.equals("key")) {
-				if (!shouldIgnore()) {
-					addToDict();					
-				}
-				if (qName.equals("dict") || qName.equals("array")) {
-					dontIgnore();
+				if (qName.equals("false") && !shouldIgnore())
+					push(Boolean.FALSE);
+				
+				if (qName.equals("data") && !shouldIgnore())
+					push(Base64Util.base64ToByteArray(pop().toString()));
+				
+				if (!qName.equals("key")) {
+					if (!shouldIgnore()) {
+						Object val = pop();
+						Object accessor = peek();
+						if (AccessibleObject.class.isAssignableFrom(accessor.getClass()))
+							try {
+								addToDict(val);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						else
+							addToArray(val);
+					}
+					if (qName.equals("dict") || qName.equals("array")) {
+						dontIgnore();
+					}
 				}
 			}
+			debug("</%s> \n\t%s", qName, this);
+		}
+		
+		private void debug(String format, Object...args) {
+			System.out.println(String.format(format, args));
 		}
 		
 		private AccessibleObject accessorForKey(Object context, Object key) {
@@ -151,25 +176,34 @@ public class PListReader {
 			Object obj = queue.get(queue.size()-1);
 			return obj;
 		}
-		
-		private void printQueue() {
-			System.out.println(this);
-		}
 
-		private void addToDict() {
-			printQueue();
-			Object value = pop();
+		private void addToDict(Object val) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
 			Object accessor = pop();
 			Object dict = peek();
-			printQueue();
-			
-			// TODO add to dict
+			if (accessor instanceof Field) {
+				Field f = (Field) accessor;
+				f.setAccessible(true);
+				
+				Class fType = f.getType();
+				
+				f.set(dict, ClassHelper.convert(val, fType));
+			} else if (accessor instanceof Method) {
+				Method m = (Method) accessor;
+				m.setAccessible(true);
+				
+				Class pType = m.getParameterTypes()[0];
+				m.invoke(dict, ClassHelper.convert(val, pType));
+			}
 		}
 		
-		private void addToArray() {
-			Object value = pop();
+		private void addToArray(Object val) {
 			Object dict = peek();
-			// TODO add to array
+			if (dict.getClass().isArray()) {
+				// TODO Handle Array types?
+			} else if (List.class.isAssignableFrom(dict.getClass())) {
+				List list = (List) dict;
+				list.add(val);
+			}
 		}
 		
 		public String toString() {
@@ -199,17 +233,17 @@ public class PListReader {
 	
 	public <T> T read(Class<T> type, InputStream in) {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
-		
+		factory.setValidating(false);
 		try {
 			Object target = type.newInstance();
 			System.out.println(">> Starting ...");
 			SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(in, new PListHandler(target));
 			System.out.println(">> Done.");
+			return (T)target;
 		} catch (Throwable err) {
 			err.printStackTrace();
 		}
-		
 		return null;
 	}
 	
