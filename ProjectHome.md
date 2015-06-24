@@ -1,0 +1,1 @@
+pList is a serialization format developed by Apple originally for NextStep is now the most common method for converting dictionaries and arrays into a portable XML format.  This project provides a collection of annotations and supporting marshaller and unmarshaller classes that enable the developer to quickly bind a Java POJO to a plist file.
