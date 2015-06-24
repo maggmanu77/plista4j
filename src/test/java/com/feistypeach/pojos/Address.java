@@ -1,14 +1,13 @@
 package com.feistypeach.pojos;
 
-import java.util.Hashtable;
-import java.util.Map;
-
 import com.feistypeach.plista4j.PListObject;
 import com.feistypeach.plista4j.PListValue;
 
+import java.util.Map;
+
 @PListObject
 public class Address {
-	@PListValue
+	@PListValue()
 	private String street1;
 	@PListValue
 	private String street2;
@@ -16,8 +15,12 @@ public class Address {
 	private String city;
 	@PListValue
 	private String state;
-	
-	private Hashtable<String, String> custom = new Hashtable<String, String>();
+
+    @PListValue(key="customfields")
+	private Map<String, String> custom;
+
+    @PListValue(key="nearBy")
+    private Map<String, Address> nearBy;
 	
 	private String zipcode;
 	
@@ -55,10 +58,20 @@ public class Address {
 	public void setZipcode(String zipcode) {
 		this.zipcode = zipcode;
 	}
-	
-	@PListValue(key="customfields")
+
 	public Map getCustomFields() {
 		return custom;
 	}
-	
+
+    public void setCustom(Map<String, String> custom) {
+        this.custom = custom;
+    }
+
+    public Map<String, Address> getNearBy() {
+        return nearBy;
+    }
+
+    public void setNearBy(Map<String, Address> nearBy) {
+        this.nearBy = nearBy;
+    }
 }

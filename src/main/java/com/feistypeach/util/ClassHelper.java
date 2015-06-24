@@ -5,10 +5,25 @@ import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClassHelper {
 
-	public static boolean isSetter(Method method) {
+    public final static Map<Class<?>, Class<?>> map = new HashMap<Class<?>, Class<?>>();
+    static {
+        map.put(boolean.class, Boolean.class);
+        map.put(byte.class, Byte.class);
+        map.put(short.class, Short.class);
+        map.put(char.class, Character.class);
+        map.put(int.class, Integer.class);
+        map.put(long.class, Long.class);
+        map.put(float.class, Float.class);
+        map.put(double.class, Double.class);
+    }
+
+
+    public static boolean isSetter(Method method) {
 		if (!method.getName().startsWith("set"))
 			return false;
 		if (method.getParameterTypes().length != 1)
@@ -52,16 +67,18 @@ public class ClassHelper {
 					e.printStackTrace();
 				}
 			} else {
+                if(type.isPrimitive()) {
+                    type = map.get(type);
+                }
 				Method valueOf;
 				try {
 					valueOf = type.getMethod("valueOf", String.class);
 					val = valueOf.invoke(type, val.toString());
 				} catch (Exception e) {
 					try {
-						Constructor constructor = type.getConstructor(String.class);
+                        Constructor constructor = type.getConstructor(String.class);
 						val = constructor.newInstance(val);
 					} catch (Exception e2) {
-						
 					}
 				} 
 				
